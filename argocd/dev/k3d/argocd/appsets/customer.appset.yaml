@@ -8,8 +8,8 @@ spec:
   goTemplateOptions: ["missingkey=error"]
   generators:
     - git:
-        repoURL: https://github.com/fullstaq-labs/argocd-training.git
-        revision: feat/improve-training
+        repoURL: https://github.com/Men-io/argocd-training.git
+        revision: main
         directories:
           - path: "*/dev/k3d/*"
         values:
