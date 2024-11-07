@@ -29,9 +29,7 @@
     "install",
     "--install-hooks"
   ],
-  "runArgs": [
-    "--add-host=argocd.localhost:127.0.0.1"
-  ],
+
   "appPort": [
     80,
     443,
