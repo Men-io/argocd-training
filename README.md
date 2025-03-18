@@ -1,9 +1,9 @@
-# argocd-training
+# ITQ-workshop ArgoCD
 Repository that holds the contents for an ArgoCD training.
 
 ## Steps for the training!
-1.  First step is to open this repository, **[click here](https://github.com/fullstaq-labs/argocd-training.git)**.\
-    Change in this repository all url's from https://github.com/fullstaq-labs/argocd-training.git to the URL from the repository you forked (search with **ctrl + shift + f** or **cmd + shift + f**).\
+1.  First step is to open this repository, **[click here](https://github.com/Men-io/itq-workshop-argocd.git)**.\
+    Change in this repository all url's from https://github.com/Men-io/itq-workshop-argocd.git to the URL from the repository you forked (search with **ctrl + shift + f** or **cmd + shift + f**).\
     Start the dev container, which can be done in 2 ways:
 
    * Open GitHub, clone this repo with one of the following commands:
@@ -15,9 +15,9 @@ Repository that holds the contents for an ArgoCD training.
      git clone git@github.com:<pathToYourForkedRepo>
      ```
      Open the folder where you've cloned the repo locally in Visual Studio Code and follow the instructions from the image below.\
-     ![instructions local vscode](./.docs/local-vscode.gif)
+     ![instructions local vscode](./.docs/vscode-local.gif)
    * Go to repository you've forked in GitHub and open Codespaces (follow the instructions from the image below).\
-        ![instructions remote vscode](./.docs/remote-vscode.gif)
+        ![instructions remote vscode](./.docs/codespaces-demo.gif)
         > [!IMPORTANT]\
         > If you've used the GitHub Codespaces, be sure to close the codespace after the training.\
         > Otherwise you could be billed by GitHub for the use of Codespaces
@@ -41,15 +41,19 @@ Repository that holds the contents for an ArgoCD training.
     # Check if all pods are running
     kubectl get pods
     ```
+4. If you are running codespaces, make sure you use the following command before you proceed
+    ```bash
+    kubectl port-forward svc/argocd-server -n argocd 8080:443
+    ```
 
-4.  If all pods are in the Running state we can proceed.\
-    Now let's check if you can reach ArgoCD ui, which is available at the url https://argocd.localhost
+5.  If all pods are in the Running state we can proceed.\
+    Now let's check if you can reach ArgoCD ui, which is available at the url https://argocd.localhost or is available with the port forward url on 8080
 
-    You can login with username **admin** and password **admin**.\
+    You don't have to authenticate, this is disabled for now.
     Once there you should see the following content:
     ![argocd ui](./.docs/argocd-ui.png)
 
-5.  The UI is one way to interact with ArgoCD.\
+6.  The UI is one way to interact with ArgoCD.\
     Another way is the ArgoCD CLI tool, which could be handy when you need to do some debugging.\
     For this workshop we've enabled using the ArgoCD without logging in.\
     Normally you should use the following command to login:
@@ -57,6 +61,7 @@ Repository that holds the contents for an ArgoCD training.
     # ArgoCD login command
     argocd login argocd.localhost
     ```
+    But now this is not necessary.
 
     To see all posibilities of the CLI tool just type the following command:
     ```bash
@@ -119,7 +124,7 @@ Repository that holds the contents for an ArgoCD training.
     Use "argocd [command] --help" for more information about a command.
     ```
 
-6.  Now we've explored the ways to interact, let's start with deploying stuff.\
+7.  Now we've explored the ways to interact, let's start with deploying stuff.\
     There are some core components in ArgoCD, which are very important:
     * Cluster - Defines the cluster and provides credentials to interact with the cluster (provided as a Kubernetes secret with annotations);
     * Repository - Defines the repository credentials for repositories where Kubernetes resources can be deployed from  (provided as a Kubernetes secret with annotations);
@@ -165,7 +170,7 @@ Repository that holds the contents for an ArgoCD training.
     argocd app sync argocd/guestbook
     ```
 
-7.  That's one way to deploy an application, but this is off course not what we want.\
+8.  That's one way to deploy an application, but this is off course not what we want.\
     Because what happens if the cluster breaks and there is no decent back-up of ETCD?!\
     Then all our changes are lost :(\
     Reason is because we've used the imperative instead of declarative way of working.
@@ -188,7 +193,6 @@ Repository that holds the contents for an ArgoCD training.
         path: <PathToYourApp>
       destination:
         namespace: <DestinationNamespace>
-        name: in-cluster
       syncPolicy:
         automated:
           prune: false
@@ -197,10 +201,6 @@ Repository that holds the contents for an ArgoCD training.
 
     First replace the values that are between *angle brackets*.\
     Take a look at the previous question and you should be able to fill these values.
-    > [!Note]\
-    > Note that the value for the destination cluster has changed.\
-    > This refers to the alias which ArgoCD uses to communicate with a cluster.\
-    > On clusters where ArgoCD runs, this is always called in-cluster.
 
     Once you've update the file, you can apply the change with the following command:
     ```bash
@@ -209,7 +209,7 @@ Repository that holds the contents for an ArgoCD training.
 
     If you look at the app in ArgoCD, nothing has changed, because you've created the same app.
 
-8.  Then there is the concept of app-of-apps, where one app manages one or more apps.\
+9.  Then there is the concept of app-of-apps, where one app manages one or more apps.\
     One way to this can be found in the contents of [this application](./applications/example-app-of-apps.yaml).\
     Instead of pointing this app to a single app you'll point it to a folder with one or more apps.\
     Also for this case we've provided example code, which looks like:
@@ -235,6 +235,11 @@ Repository that holds the contents for an ArgoCD training.
           selfHeal: false
     ```
 
+    > [!Note]\
+    > Note that the value for the destination cluster has changed.\
+    > This refers to the alias which ArgoCD uses to communicate with a cluster.\
+    > On clusters where ArgoCD runs, this is always called in-cluster.
+
     Start replacing the values between the *angle brackets* but wait before you apply the changes.\
     You also need to change the contents of the values in [folder app-of-apps](./app-of-apps/).
     Also change the values between the *angle brackets*.\
@@ -244,14 +249,14 @@ Repository that holds the contents for an ArgoCD training.
     > This is explained in [this article](https://argo-cd.readthedocs.io/en/stable/user-guide/private-repositories/).\
     > It can also be done the declarative way, which is explained in [this article](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#repositories).
 
-    Once done, you can apply the application, which should trigger the deployment of 3 applications (the app-of-apps application and 2 guestbook applications).
+    Once done, you can apply the application, which should trigger the deployment of 2 applications (the 2 guestbook applications).
     ```bash
     kubectl apply -f applications/example-app-of-apps.yaml
     ```
 
     To check if everything works, please use the ArgoCD CLI of ArgoCD UI.
 
-9.  Untill now we've only managed kubernetes manifest with ArgoCD applications.\
+10. Untill now we've only managed kubernetes manifest with ArgoCD applications.\
     But what about Helm charts? Can these also be managed with ArgoCD?\
     Of course, but the configuration needs to be slightly different.\
     Below is an example of the code:
@@ -285,7 +290,7 @@ Repository that holds the contents for an ArgoCD training.
     If you commit the change to git, the app-of-apps should automatically add the new app to your cluster.
 
 
-10. In the previous exercises we've used a predefined project, which is customer.\
+11. In the previous exercises we've used a predefined project, which is customer.\
     Now we're going to create one of our own!\
     But what can you do with a project?
     * Set boundaries;
@@ -344,9 +349,9 @@ Repository that holds the contents for an ArgoCD training.
     spec:
       project: developer
       source:
-        repoURL: <YourRepositoryHere>
-        targetRevision: <PathToYourBranch>
-        path: <PathToYourApp>
+        repoURL: https://github.com/argoproj/argocd-example-apps.git
+        targetRevision: master
+        path: guestbook
       destination:
         namespace: example-developer
         name: in-cluster
@@ -370,9 +375,9 @@ Repository that holds the contents for an ArgoCD training.
     spec:
       project: developer
       source:
-        repoURL: <YourRepositoryHere>
-        targetRevision: <PathToYourBranch>
-        path: <PathToYourApp>
+        repoURL: https://github.com/argoproj/argocd-example-apps.git
+        targetRevision: master
+        path: guestbook
       destination:
         namespace: developer-example
         name: in-cluster
@@ -387,7 +392,7 @@ Repository that holds the contents for an ArgoCD training.
     The result you should see is that the failing app won't deploy and the succesfull app will deploy.\
     If you want to learn more about projects, have a look at [this documentation](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#projects).
 
-11. Now it's time to apply a better setup for providing apps.\
+12. Now it's time to apply a better setup for providing apps.\
     This can be achieved by using ApplicationSets, which make the setup even more dynamic.\
     The setup you are using in this training is based on ApplicationSets.\
     Below the contents of the ApplicationSets is shown:
@@ -402,7 +407,7 @@ Repository that holds the contents for an ArgoCD training.
       goTemplateOptions: ["missingkey=error"]
       generators:
         - git:
-            repoURL: https://github.com/fullstaq-labs/argocd-training.git
+            repoURL: https://github.com/Men-io/itq-workshop-argocd.git
             revision: feat/improve-training
             directories:
               - path: "*/dev/k3d/*"
@@ -437,7 +442,7 @@ Repository that holds the contents for an ArgoCD training.
                 duration: 5s
                 factor: 1
           source:
-            repoURL: https://github.com/fullstaq-labs/argocd-training.git
+            repoURL: https://github.com/Men-io/itq-workshop-argocd.git
             targetRevision: feat/improve-training
             path: "{{.path.path}}"
     ```
@@ -471,9 +476,9 @@ Repository that holds the contents for an ArgoCD training.
     spec:
       project: customer
       source:
-        repoURL: <YourRepositoryHere>
-        targetRevision: <PathToYourBranch>
-        path: <PathToYourApp>
+        repoURL: https://github.com/argoproj/argocd-example-apps.git
+        targetRevision: master
+        path: guestbook
       destination:
         namespace: appset-app
         name: in-cluster
